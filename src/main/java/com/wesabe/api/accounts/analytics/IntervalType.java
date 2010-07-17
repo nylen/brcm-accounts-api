@@ -49,6 +49,26 @@ public enum IntervalType {
 	},
 	
 	/**
+	 * Two weeks.
+	 * 
+	 */
+	BIWEEKLY {
+		@Override
+		protected Period getPeriod() {
+			return TWO_WEEKS;
+		}
+		
+		@Override
+		protected DateTime getIntervalStart(DateTime dateTime) {
+			DateTime toReturn = beginningOfWeek(beginningOfDay(dateTime));
+			if (toReturn.getWeekOfWeekyear() % 2 != 0) {
+				toReturn = toReturn.minusWeeks(1);
+			}
+			return toReturn;
+		}
+	},
+	
+	/**
 	 * A month.
 	 * 
 	 * <p><strong>N.B.:</strong> This is not strictly 30 days -- a month from
@@ -111,6 +131,7 @@ public enum IntervalType {
 	// constants used as instance periods
 	private static final Period ONE_DAY = Period.days(1);
 	private static final Period ONE_WEEK = Period.weeks(1);
+	private static final Period TWO_WEEKS = Period.weeks(2);
 	private static final Period ONE_MONTH = Period.months(1);
 	private static final Period THREE_MONTHS = Period.months(3);
 	private static final Period ONE_YEAR = Period.years(1);
