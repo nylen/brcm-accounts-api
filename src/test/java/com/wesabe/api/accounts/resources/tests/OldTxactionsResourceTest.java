@@ -2,11 +2,13 @@ package com.wesabe.api.accounts.resources.tests;
 
 import static com.wesabe.api.tests.util.CurrencyHelper.*;
 import static com.wesabe.api.tests.util.DateHelper.*;
+import static com.wesabe.api.tests.util.NumberHelper.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -50,6 +52,8 @@ public class OldTxactionsResourceTest {
 		protected Set<UriParam> accountUris;
 		protected Set<String> tagUris;
 		protected Set<String> merchantNames;
+		protected BigDecimal amount;
+		protected String query;
 		
 		protected AccountList accounts;
 		protected List<Txaction> txactions;
@@ -67,6 +71,8 @@ public class OldTxactionsResourceTest {
 			this.offset = null;
 			this.startDate = null;
 			this.endDate = null;
+			this.amount = null;
+			this.query = null;
 			this.accountUris = ImmutableSet.of();
 			this.tagUris = ImmutableSet.of();
 			this.merchantNames = ImmutableSet.of();
@@ -95,21 +101,21 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLoadsTheUsersAccounts() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getAccountDAO()).findVisibleAccounts(context.getUser().getAccountKey());
 		}
 		
 		@Test
 		public void itLoadsAllTransactionsForTheAccounts() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionDAO()).findTxactions(accounts);
 		}
 		
 		@Test
 		public void itBuildsATransactionList() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilderProvider()).get();
 			verify(context.getTxactionListBuilder()).setCurrency(GBP);
@@ -121,7 +127,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itPresentsTheTxactionListAsXmlson() throws Exception {
-			final XmlsonObject result = resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			final XmlsonObject result = resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListPresenter()).present(txactionList, Locale.CANADA_FRENCH);
 			
@@ -139,7 +145,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToThoseMerchants() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setMerchantNames(merchantNames);
 		}
@@ -155,7 +161,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itOffsetsTheTransactionListByTheGivenNumber() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setOffset(200);
 		}
@@ -171,7 +177,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToTheGivenNumber() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setLimit(10);
 		}
@@ -187,7 +193,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToThoseTags() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setTags(ImmutableSet.of(new Tag("food")));
 		}
@@ -203,7 +209,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToThoseTags() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setTags(ImmutableSet.of(new Tag("either/or")));
 		}
@@ -219,7 +225,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itIgnoresMalformedTagURIs() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setTags(ImmutableSet.of(new Tag("food")));
 		}
@@ -249,7 +255,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToThoseAccounts() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setAccounts(new AccountList(checking, weirdOne));
 		}
@@ -276,7 +282,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itIgnoresMalformedAccountURIs() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionListBuilder()).setAccounts(new AccountList(checking));
 		}
@@ -292,7 +298,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToTxactionsAfterTheStartDate() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionDAO()).findTxactionsAfterDate(accounts, date(2006, 8, 9));
 		}
@@ -308,7 +314,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToTxactionsBeforeTheEndDate() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionDAO()).findTxactionsBeforeDate(accounts, date(2006, 9, 9));
 		}
@@ -325,7 +331,7 @@ public class OldTxactionsResourceTest {
 		
 		@Test
 		public void itLimitsTheTransactionListToTxactionsBeforeTheEndDate() throws Exception {
-			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+			resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 			
 			verify(context.getTxactionDAO()).findTxactionsInDateRange(accounts, new Interval(date(2006, 8, 9), date(2006, 9, 9)));
 		}
@@ -343,11 +349,43 @@ public class OldTxactionsResourceTest {
 		@Test
 		public void itReturns400BadRequest() throws Exception {
 			try {
-				resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames);
+				resource.show(context.getUser(), Locale.CANADA_FRENCH, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
 				fail("should have raised a WebApplicationException but didn't");
 			} catch (WebApplicationException e) {
 				assertThat(e.getResponse().getStatus(), is(400));
 			}
+		}
+	}
+	
+	public static class Building_A_Transaction_List_With_A_Specific_Amount extends Context {
+		@Before
+		@Override
+		public void setup() throws Exception {
+			super.setup();
+			this.amount = decimal("-20.00");
+		}
+		
+		@Test
+		public void itFindsOnlyTransactionsWithTheGivenAmount() throws Exception {
+			resource.show(context.getUser(), Locale.CANADA, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
+			
+			verify(context.getTxactionListBuilder()).setAmount(amount);
+		}
+	}
+	
+	public static class Building_A_Transaction_List_With_A_Query extends Context {
+		@Before
+		@Override
+		public void setup() throws Exception {
+			super.setup();
+			this.query = "Chevron";
+		}
+		
+		@Test
+		public void itFindsTransactionsThatIncludeTheQueryInItsText() throws Exception {
+			resource.show(context.getUser(), Locale.CANADA, currency, uneditedOnly, limit, offset, startDate, endDate, accountUris, tagUris, merchantNames, amount, query);
+			
+			verify(context.getTxactionListBuilder()).setQuery(query);
 		}
 	}
 }

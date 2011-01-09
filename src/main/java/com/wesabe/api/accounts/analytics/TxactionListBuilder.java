@@ -1,5 +1,6 @@
 package com.wesabe.api.accounts.analytics;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -30,6 +31,8 @@ public class TxactionListBuilder {
 	private int limit = 0;
 	private Currency currency;
 	private CurrencyExchangeRateMap exchangeRateMap;
+	private BigDecimal amount;
+	private String query;
 	
 	public TxactionList build(Collection<Txaction> txactions) {
 		TxactionList txactionList = new TxactionList();
@@ -100,6 +103,10 @@ public class TxactionListBuilder {
 	private List<Txaction> filter(Collection<Txaction> txactions) {
 		List<Txaction> filteredTxactions = filterHiddenTxactions(txactions);
 		
+		if (amount != null) {
+			filteredTxactions = filterByAmount(filteredTxactions);
+		}
+		
 		if (!accounts.isEmpty()) {
 			filteredTxactions = filterByAccounts(filteredTxactions);
 		}
@@ -116,9 +123,24 @@ public class TxactionListBuilder {
 			filteredTxactions = filterByUnedited(filteredTxactions);
 		}
 		
+		if (query != null) {
+			filteredTxactions = filterByQuery(filteredTxactions);
+		}
+		
 		return filteredTxactions;
 	}
 	
+	private List<Txaction> filterByAmount(List<Txaction> txactions) {
+		return Lists.newArrayList(
+				Iterables.filter(txactions, new Predicate<Txaction>() {
+					@Override
+					public boolean apply(Txaction txaction) {
+						return txaction.getAmount().getValue().equals(amount);
+					}
+				})
+			);
+	}
+
 	private List<Txaction> filterByMerchants(List<Txaction> txactions) {
 		return Lists.newArrayList(
 			Iterables.filter(txactions, new Predicate<Txaction>() {
@@ -180,6 +202,52 @@ public class TxactionListBuilder {
 		);
 	}
 	
+	private List<Txaction> filterByQuery(List<Txaction> txactions) {
+		final String lowerQuery = query.toLowerCase();
+		
+		return Lists.newArrayList(
+			Iterables.filter(txactions, new Predicate<Txaction>() {
+				@Override
+				public boolean apply(Txaction txaction) {
+					final String filteredName = txaction.getFilteredName();
+					
+					if (filteredName != null && filteredName.toLowerCase().contains(lowerQuery)) {
+						return true;
+					}
+					
+					final String note = txaction.getNote();
+					
+					if (note != null && note.toLowerCase().contains(lowerQuery)) {
+						return true;
+					}
+					
+					final Merchant merchant = txaction.getMerchant();
+					
+					if (merchant != null) {
+						final String merchantName = merchant.getName();
+						
+						if (merchantName != null && merchantName.toLowerCase().contains(lowerQuery)) {
+							return true;
+						}
+					}
+					
+					final List<TaggedAmount> taggedAmounts = txaction.getTaggedAmounts();
+					
+					if (taggedAmounts != null) {
+						for (TaggedAmount taggedAmount : taggedAmounts) {
+							final Tag tag = taggedAmount.getTag();
+							if (tag != null && tag.toString().toLowerCase().contains(lowerQuery)) {
+								return true;
+							}
+						}
+					}
+					
+					return false;
+				}
+			})
+		);
+	}
+	
 	public TxactionListBuilder setMerchantNames(Collection<String> merchantNames) {
 		this.merchantNames = ImmutableSet.copyOf(merchantNames);
 		return this;
@@ -214,6 +282,11 @@ public class TxactionListBuilder {
 		this.limit = limit;
 		return this;
 	}
+
+	public TxactionListBuilder setAmount(BigDecimal amount) {
+		this.amount = amount;
+		return this;
+	}
 	
 	public TxactionListBuilder setCurrency(Currency currency) {
 		this.currency = currency;
@@ -227,5 +300,10 @@ public class TxactionListBuilder {
 
 	public CurrencyExchangeRateMap getCurrencyExchangeRateMap() {
 		return exchangeRateMap;
+	}
+
+	public TxactionListBuilder setQuery(String query) {
+		this.query = query;
+		return this;
 	}
 }
